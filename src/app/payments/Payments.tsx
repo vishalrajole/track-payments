@@ -64,7 +64,11 @@ function PaymentList() {
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data, isError, fetchNextPage, isFetching, isLoading } = usePayments();
+  const [sorting, setSorting] = useState<SortingState>([]);
+
+  const { data, isError, fetchNextPage, isFetching, isLoading } = usePayments({
+    sorting,
+  });
 
   const flatData = useMemo(
     () => data?.pages?.flatMap((page) => page.data) ?? [],
@@ -94,8 +98,6 @@ function PaymentList() {
   useEffect(() => {
     fetchMoreOnBottomReached(tableContainerRef.current);
   }, [fetchMoreOnBottomReached]);
-
-  const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     data: flatData,
