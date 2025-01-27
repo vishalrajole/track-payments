@@ -1,6 +1,12 @@
-import { BASE_URL } from "@/helpers/api";
+import { fetchData } from "./makeData";
 
-export async function fetchPayments() {
-  const res = await fetch(`${BASE_URL}/payments`);
-  return res.json();
+export async function fetchPayments({
+  start,
+  limit,
+}: {
+  start: number;
+  limit: number;
+}) {
+  const fetchedData = await fetchData(start, limit);
+  return fetchedData;
 }
