@@ -22,6 +22,13 @@ const loginSchema = z.object({
 });
 
 export async function loginAction(prevState: any, formData: FormData) {
+  if (!(formData instanceof FormData)) {
+    return {
+      errors: {
+        email: ["Invalid email or password"],
+      },
+    };
+  }
   const result = loginSchema.safeParse(Object.fromEntries(formData));
 
   if (!result.success) {
