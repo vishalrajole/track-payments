@@ -1,7 +1,7 @@
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { Payments } from "./Payments";
 
-export default async function PaymentsPage() {
+export default async function Dashboard() {
   const queryClient = new QueryClient();
 
   const dehydratedState = dehydrate(queryClient);

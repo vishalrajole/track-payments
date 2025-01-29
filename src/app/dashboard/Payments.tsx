@@ -1,7 +1,7 @@
 "use client";
 
 import { HydrationBoundary } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -25,42 +25,39 @@ export function Payments({ dehydratedState }: { dehydratedState: any }) {
 }
 
 function PaymentList() {
-  const columns = useMemo<ColumnDef<Payment>[]>(
-    () => [
-      {
-        accessorKey: "firstName",
-        cell: (info) => info.getValue(),
-        header: () => <span>First Name</span>,
-      },
-      {
-        accessorFn: (row) => row.lastName,
-        id: "lastName",
-        cell: (info) => info.getValue(),
-        header: () => <span>Last Name</span>,
-      },
+  const columns: ColumnDef<Payment>[] = [
+    {
+      accessorKey: "firstName",
+      cell: (info) => info.getValue(),
+      header: () => <span>First Name</span>,
+    },
+    {
+      accessorFn: (row) => row.lastName,
+      id: "lastName",
+      cell: (info) => info.getValue(),
+      header: () => <span>Last Name</span>,
+    },
 
-      {
-        accessorKey: "reference",
-        header: () => <span>Reference</span>,
-      },
-      {
-        accessorKey: "amount",
-        header: () => <span>Amount</span>,
-        cell: (info) => info.getValue() as number,
-      },
-      {
-        accessorKey: "status",
-        header: () => <span>Status</span>,
-      },
-      {
-        accessorKey: "createdAt",
-        header: () => <span>Created At</span>,
-        cell: (info) => info.getValue<Date>().toLocaleString(),
-        size: 200,
-      },
-    ],
-    []
-  );
+    {
+      accessorKey: "reference",
+      header: () => <span>Reference</span>,
+    },
+    {
+      accessorKey: "amount",
+      header: () => <span>Amount</span>,
+      cell: (info) => info.getValue() as number,
+    },
+    {
+      accessorKey: "status",
+      header: () => <span>Status</span>,
+    },
+    {
+      accessorKey: "createdAt",
+      header: () => <span>Created At</span>,
+      cell: (info) => info.getValue<Date>().toLocaleString(),
+      size: 200,
+    },
+  ];
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
@@ -70,29 +67,26 @@ function PaymentList() {
     sorting,
   });
 
-  const flatData = useMemo(
-    () => data?.pages?.flatMap((page) => page.data) ?? [],
-    [data]
-  );
+  const flatData = data?.pages?.flatMap((page) => page.data) ?? [];
+
   const totalDBRowCount = data?.pages?.[0]?.meta?.totalRowCount ?? 0;
   const totalFetched = flatData.length;
 
-  const fetchMoreOnBottomReached = useCallback(
-    (containerRefElement?: HTMLDivElement | null) => {
-      if (containerRefElement) {
-        const { scrollHeight, scrollTop, clientHeight } = containerRefElement;
-        // once the user has scrolled within 500px of the bottom of the table, fetch more data if we can
-        if (
-          scrollHeight - scrollTop - clientHeight < 500 &&
-          !isFetching &&
-          totalFetched < totalDBRowCount
-        ) {
-          fetchNextPage();
-        }
+  const fetchMoreOnBottomReached = (
+    containerRefElement?: HTMLDivElement | null
+  ) => {
+    if (containerRefElement) {
+      const { scrollHeight, scrollTop, clientHeight } = containerRefElement;
+      // once the user has scrolled within 500px of the bottom of the table, fetch more data if we can
+      if (
+        scrollHeight - scrollTop - clientHeight < 500 &&
+        !isFetching &&
+        totalFetched < totalDBRowCount
+      ) {
+        fetchNextPage();
       }
-    },
-    [fetchNextPage, isFetching, totalFetched, totalDBRowCount]
-  );
+    }
+  };
 
   // a check on mount and after a fetch to see if the table is already scrolled to the bottom and immediately needs to fetch more data
   useEffect(() => {
