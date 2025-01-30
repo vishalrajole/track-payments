@@ -49,7 +49,7 @@ export async function loginAction(prevState: any, formData: FormData) {
 
   await createSession(testUser.id);
 
-  redirect("/dashboard");
+  redirect("/payments");
 }
 
 export async function logout() {

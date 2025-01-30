@@ -4,7 +4,7 @@ import { QUERIES } from "@/helpers/queries";
 import { paymentApiResponse } from "@/api/makeData";
 import { SortingState } from "@tanstack/react-table";
 
-export const DEFAULT_PAGE_LIMIT = 15;
+export const DEFAULT_PAGE_LIMIT = 50;
 
 async function getPayments({
   start,
@@ -20,6 +20,7 @@ async function getPayments({
     limit,
     sorting,
   });
+
   return response;
 }
 
