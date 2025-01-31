@@ -27,6 +27,7 @@ export default function Topbar() {
 
         <button
           onClick={logout}
+          name="logout"
           className="p-2 hover:bg-red-100 rounded"
           title="Logout"
         >
