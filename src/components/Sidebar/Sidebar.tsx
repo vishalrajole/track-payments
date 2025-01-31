@@ -5,8 +5,8 @@ import { Home, CreditCard } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const ROUTES_MAPPING = [
-  { name: "Properties", href: "/properties", icon: Home },
   { name: "Payments", href: "/payments", icon: CreditCard },
+  { name: "Properties", href: "/properties", icon: Home },
 ];
 
 export default function Sidebar() {

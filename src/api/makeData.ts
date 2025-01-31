@@ -1,13 +1,14 @@
 import { faker } from "@faker-js/faker";
 import { ColumnFilter, ColumnSort, SortingState } from "@tanstack/react-table";
 
+export type PaymentStatus = "completed" | "failed" | "processing";
 export type Payment = {
   id: number;
   firstName: string;
   lastName: string;
   reference: string;
   amount: string;
-  status: "completed" | "failed" | "processing";
+  status: PaymentStatus;
   createdAt: Date;
 };
 

@@ -14,7 +14,6 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Payment } from "@/api/makeData";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -23,122 +22,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { PaymentListTable } from "./PaymentListTable";
 import { usePayments } from "./usePayments";
+import { Search } from "./Search";
+import { COLUMNS } from "./Columns";
+import { Badge } from "@/components/ui/badge";
 
 export function PaymentList() {
-  const columns: ColumnDef<Payment>[] = [
-    {
-      accessorKey: "firstName",
-      cell: (info) => info.getValue(),
-      header: ({ column }) => {
-        return (
-          <div
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex text-center items-center"
-          >
-            First Name
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </div>
-        );
-      },
-    },
-    {
-      accessorFn: (row) => row.lastName,
-      id: "lastName",
-      cell: (info) => info.getValue(),
-      header: ({ column }) => {
-        return (
-          <div
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex text-center items-center"
-          >
-            Last Name
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </div>
-        );
-      },
-    },
-
-    {
-      accessorKey: "reference",
-      header: ({ column }) => {
-        return (
-          <div
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex text-center items-center"
-          >
-            Reference
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "amount",
-      header: () => <div className="text-right">Amount</div>,
-      cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("amount"));
-        const formatted = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        }).format(amount);
-
-        return <div className="text-right font-medium">{formatted}</div>;
-      },
-    },
-    {
-      accessorKey: "status",
-      header: () => <span>Status</span>,
-    },
-    {
-      accessorKey: "createdAt",
-      header: () => <span>Created At</span>,
-      cell: (info) => info.getValue<Date>().toLocaleString(),
-      size: 200,
-    },
-    {
-      id: "actions",
-      cell: ({ row }) => {
-        const payment = row.original;
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() =>
-                  navigator.clipboard.writeText(payment.id.toString())
-                }
-              >
-                Copy payment ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>View payment details</DropdownMenuItem>
-              <DropdownMenuItem>View property</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
-
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -180,7 +70,7 @@ export function PaymentList() {
 
   const table = useReactTable({
     data: flatData,
-    columns,
+    columns: COLUMNS,
     state: {
       sorting,
       columnFilters,
@@ -224,26 +114,24 @@ export function PaymentList() {
   if (isLoading) {
     return <>Loading...</>;
   }
+
   return (
-    <>
+    <div className="flex flex-col gap-2 overflow-hidden">
+      <div className="flex items-center justify-between">
+        <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <Badge variant="outline" className="mr-2 p-2">
+          <p className="text-sm font-semibold">
+            {totalFetched} of {totalDBRowCount} Payments
+          </p>
+        </Badge>
+      </div>
+
       <div
         onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
         ref={tableContainerRef}
         className="container overflow-auto relative h-[600px]"
       >
-        <div className="flex items-center py-4 ml-1">
-          <Input
-            placeholder="Search for ..."
-            value={searchTerm}
-            onChange={(event) => {
-              const value = event.target.value;
-              setSearchTerm(value);
-            }}
-            className="max-w-sm"
-          />
-        </div>
-
-        <Table className="relative border border-gray-200">
+        <Table className="relative border border-gray-200 ">
           <TableHeader className="sticky top-0 z-10 bg-gray-800 ">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="flex w-full">
@@ -306,16 +194,16 @@ export function PaymentList() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={COLUMNS.length}
                   className="h-24 text-center"
                 >
-                  No Payments created yet.
+                  No payments.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-    </>
+    </div>
   );
 }

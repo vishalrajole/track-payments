@@ -11,7 +11,7 @@ export default async function Payments() {
   const dehydratedState = dehydrate(queryClient);
 
   return (
-    <div className="grid items-center justify-items-center">
+    <div className="">
       <HydrationBoundary state={dehydratedState}>
         <PaymentList />
       </HydrationBoundary>
