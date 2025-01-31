@@ -1,32 +1,20 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ColumnDef,
   ColumnFiltersState,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
   OnChangeFn,
-  Row,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Payment } from "@/api/makeData";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { PaymentListTable } from "./PaymentListTable";
+import { Badge } from "@/components/ui/badge";
+import { Grid } from "./Grid";
 import { usePayments } from "./usePayments";
 import { Search } from "./Search";
 import { COLUMNS } from "./Columns";
-import { Badge } from "@/components/ui/badge";
 
 export function PaymentList() {
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -47,26 +35,6 @@ export function PaymentList() {
   );
   const totalDBRowCount = data?.pages?.[0]?.meta?.totalRowCount ?? 0;
   const totalFetched = flatData.length;
-
-  const fetchMoreOnBottomReached = useCallback(
-    (containerRefElement?: HTMLDivElement | null) => {
-      if (containerRefElement) {
-        const { scrollHeight, scrollTop, clientHeight } = containerRefElement;
-        if (
-          scrollHeight - scrollTop - clientHeight < 500 &&
-          !isFetching &&
-          totalFetched < totalDBRowCount
-        ) {
-          fetchNextPage();
-        }
-      }
-    },
-    [fetchNextPage, isFetching, totalFetched, totalDBRowCount]
-  );
-
-  useEffect(() => {
-    fetchMoreOnBottomReached(tableContainerRef.current);
-  }, [fetchMoreOnBottomReached]);
 
   const table = useReactTable({
     data: flatData,
@@ -111,8 +79,32 @@ export function PaymentList() {
     overscan: 5,
   });
 
+  const fetchMoreOnBottomReached = useCallback(
+    (containerRefElement?: HTMLDivElement | null) => {
+      if (containerRefElement) {
+        const { scrollHeight, scrollTop, clientHeight } = containerRefElement;
+        if (
+          scrollHeight - scrollTop - clientHeight < 500 &&
+          !isFetching &&
+          totalFetched < totalDBRowCount
+        ) {
+          fetchNextPage();
+        }
+      }
+    },
+    [fetchNextPage, isFetching, totalFetched, totalDBRowCount]
+  );
+
+  useEffect(() => {
+    fetchMoreOnBottomReached(tableContainerRef.current);
+  }, [fetchMoreOnBottomReached]);
+
   if (isLoading) {
     return <>Loading...</>;
+  }
+
+  if (isError) {
+    return <>Error...</>;
   }
 
   return (
@@ -131,78 +123,12 @@ export function PaymentList() {
         ref={tableContainerRef}
         className="container overflow-auto relative h-[600px]"
       >
-        <Table className="relative border border-gray-200 ">
-          <TableHeader className="sticky top-0 z-10 bg-gray-800 ">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="flex w-full">
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="flex px-3 py-2 border-r border-gray-700"
-                    style={{ width: header.getSize() }}
-                  >
-                    <div
-                      {...{
-                        className: header.column.getCanSort()
-                          ? "cursor-pointer select-none text-white font-bold"
-                          : "",
-                        onClick: header.column.getToggleSortingHandler(),
-                      }}
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                    </div>
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-
-          <TableBody
-            className="relative"
-            style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
-          >
-            {rows.length > 0 ? (
-              rowVirtualizer.getVirtualItems().map((virtualRow: any) => {
-                const row = rows[virtualRow.index] as Row<Payment>;
-
-                return (
-                  <TableRow
-                    key={row.id}
-                    ref={(node) => rowVirtualizer.measureElement(node)}
-                    data-index={virtualRow.index}
-                    className="flex absolute w-full hover:bg-gray-100"
-                    style={{ transform: `translateY(${virtualRow.start}px)` }}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className="flex px-3 py-2 border-r border-gray-100"
-                        style={{ width: cell.column.getSize() }}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={COLUMNS.length}
-                  className="h-24 text-center"
-                >
-                  No payments.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <Grid
+          table={table}
+          rowVirtualizer={rowVirtualizer}
+          COLUMNS={COLUMNS}
+          rows={rows}
+        />
       </div>
     </div>
   );
