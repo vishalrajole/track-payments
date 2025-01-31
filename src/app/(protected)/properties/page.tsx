@@ -3,17 +3,18 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import { PaymentList } from "./PaymentList";
+import PropertyList from "./PropertyList";
 
-export default async function Payments() {
+export default async function Properties() {
   const queryClient = new QueryClient();
 
   const dehydratedState = dehydrate(queryClient);
 
   return (
     <div className="grid items-center justify-items-center">
+      Properties
       <HydrationBoundary state={dehydratedState}>
-        <PaymentList />
+        <PropertyList />
       </HydrationBoundary>
     </div>
   );

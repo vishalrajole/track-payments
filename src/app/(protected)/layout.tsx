@@ -1,14 +1,15 @@
+import { ReactNode } from "react";
+import Sidebar from "@/components/Sidebar/Sidebar";
 import TopBar from "@/components/Topbar/Topbar";
 
-export default function ProtectedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ProtectedLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-col min-h-screen">
-      <TopBar />
-      <main className="flex-1 p-4">{children}</main>
+    <div className="flex">
+      <Sidebar />
+      <div className="flex-1 ml-[250px]">
+        <TopBar />
+        <main className="p-6">{children}</main>
+      </div>
     </div>
   );
 }
