@@ -11,10 +11,8 @@ export default async function Payments() {
   const dehydratedState = dehydrate(queryClient);
 
   return (
-    <div className="">
-      <HydrationBoundary state={dehydratedState}>
-        <PaymentList />
-      </HydrationBoundary>
-    </div>
+    <HydrationBoundary state={dehydratedState}>
+      <PaymentList />
+    </HydrationBoundary>
   );
 }

@@ -21,7 +21,7 @@ const loginSchema = z.object({
     .trim(),
 });
 
-export async function loginAction(prevState: any, formData: FormData) {
+export async function loginAction(_: unknown, formData: FormData) {
   if (!(formData instanceof FormData)) {
     return {
       errors: {

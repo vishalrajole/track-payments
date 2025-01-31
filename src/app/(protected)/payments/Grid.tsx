@@ -11,20 +11,16 @@ import {
 } from "@/components/ui/table";
 import { Table as TableType } from "@tanstack/react-table";
 import { Payment } from "@/api/makeData";
+import { Virtualizer } from "@tanstack/react-virtual";
 
 type DataTableProps = {
   table: TableType<Payment>;
-  rowVirtualizer: any;
-  rows: any;
+  rowVirtualizer: Virtualizer<HTMLDivElement, Element>;
+  rows: Row<Payment>[];
   COLUMNS: ColumnDef<Payment>[];
 };
 
-export function Grid<TData, TValue>({
-  table,
-  rowVirtualizer,
-  rows,
-  COLUMNS,
-}: DataTableProps) {
+export function Grid({ table, rowVirtualizer, rows, COLUMNS }: DataTableProps) {
   return (
     <TableComponent className="relative border border-gray-200 ">
       <TableHeader className="sticky top-0 z-10 bg-gray-800 ">
@@ -60,7 +56,7 @@ export function Grid<TData, TValue>({
         style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
       >
         {rows.length > 0 ? (
-          rowVirtualizer.getVirtualItems().map((virtualRow: any) => {
+          rowVirtualizer.getVirtualItems().map((virtualRow) => {
             const row = rows[virtualRow.index] as Row<Payment>;
 
             return (

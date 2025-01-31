@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { ColumnFilter, ColumnSort, SortingState } from "@tanstack/react-table";
+import { ColumnSort, SortingState } from "@tanstack/react-table";
 
 export type PaymentStatus = "completed" | "failed" | "processing";
 export type Payment = {
@@ -63,13 +63,11 @@ export const fetchData = async ({
   start,
   limit,
   sorting,
-  columnFilters,
   searchTerm,
 }: {
   start: number;
   limit: number;
   sorting: SortingState;
-  columnFilters: ColumnFilter[];
   searchTerm?: string;
 }) => {
   let dbData = [...data];

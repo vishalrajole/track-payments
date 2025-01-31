@@ -25,7 +25,6 @@ export function PaymentList() {
 
   const { data, isError, fetchNextPage, isFetching, isLoading } = usePayments({
     sorting,
-    columnFilters,
     searchTerm,
   });
 
