@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { ColumnSort, SortingState } from "@tanstack/react-table";
+import { ColumnFilter, ColumnSort, SortingState } from "@tanstack/react-table";
 
 export type Payment = {
   id: number;
@@ -58,12 +58,20 @@ export function makeData(...lens: number[]) {
 const data = makeData(1000);
 
 //simulates a backend api
-export const fetchData = async (
-  start: number,
-  size: number,
-  sorting: SortingState
-) => {
-  const dbData = [...data];
+export const fetchData = async ({
+  start,
+  limit,
+  sorting,
+  columnFilters,
+  searchTerm,
+}: {
+  start: number;
+  limit: number;
+  sorting: SortingState;
+  columnFilters: ColumnFilter[];
+  searchTerm?: string;
+}) => {
+  let dbData = [...data];
   if (sorting?.length) {
     const sort = sorting[0] as ColumnSort;
     const { id, desc } = sort as { id: keyof Payment; desc: boolean };
@@ -75,11 +83,19 @@ export const fetchData = async (
     });
   }
 
+  if (searchTerm?.length) {
+    dbData = dbData.filter((payment) =>
+      Object.values(payment).some((value) =>
+        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }
+
   //simulate a backend api
   await new Promise((resolve) => setTimeout(resolve, 200));
 
   return {
-    data: dbData.slice(start, start + size),
+    data: dbData.slice(start, start + limit),
     meta: {
       totalRowCount: dbData.length,
     },

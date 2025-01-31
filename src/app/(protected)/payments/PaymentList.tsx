@@ -2,8 +2,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ColumnDef,
+  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getSortedRowModel,
   OnChangeFn,
   Row,
@@ -12,9 +14,7 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Payment } from "@/api/makeData";
-import { usePayments } from "./usePayments";
-
-import { PaymentListTable } from "./PaymentListTable";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -32,7 +32,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { PaymentListTable } from "./PaymentListTable";
+import { usePayments } from "./usePayments";
 
 export function PaymentList() {
   const columns: ColumnDef<Payment>[] = [
@@ -140,9 +142,13 @@ export function PaymentList() {
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const { data, isError, fetchNextPage, isFetching, isLoading } = usePayments({
     sorting,
+    columnFilters,
+    searchTerm,
   });
 
   const flatData = useMemo(
@@ -177,10 +183,14 @@ export function PaymentList() {
     columns,
     state: {
       sorting,
+      columnFilters,
     },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
     manualSorting: true,
+    manualFiltering: true,
     debugTable: true,
   });
 
@@ -215,154 +225,97 @@ export function PaymentList() {
     return <>Loading...</>;
   }
   return (
-    <div
-      onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
-      ref={tableContainerRef}
-      className="container overflow-auto relative h-[600px]"
-    >
-      {/* <table className="grid">
-          <thead className="grid sticky top-0 z-10 bg-gray-100 border-b border-r border-gray-300 px-2 py-1 text-left">
+    <>
+      <div
+        onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
+        ref={tableContainerRef}
+        className="container overflow-auto relative h-[600px]"
+      >
+        <div className="flex items-center py-4 ml-1">
+          <Input
+            placeholder="Search for ..."
+            value={searchTerm}
+            onChange={(event) => {
+              const value = event.target.value;
+              setSearchTerm(value);
+            }}
+            className="max-w-sm"
+          />
+        </div>
+
+        <Table className="relative border border-gray-200">
+          <TableHeader className="sticky top-0 z-10 bg-gray-800 ">
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="flex w-full">
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <th
-                      key={header.id}
-                      className="flex"
-                      style={{
-                        width: header.getSize(),
+              <TableRow key={headerGroup.id} className="flex w-full">
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="flex px-3 py-2 border-r border-gray-700"
+                    style={{ width: header.getSize() }}
+                  >
+                    <div
+                      {...{
+                        className: header.column.getCanSort()
+                          ? "cursor-pointer select-none text-white font-bold"
+                          : "",
+                        onClick: header.column.getToggleSortingHandler(),
                       }}
                     >
-                      <div
-                        {...{
-                          className: header.column.getCanSort()
-                            ? "cursor-pointer select-none"
-                            : "",
-                          onClick: header.column.getToggleSortingHandler(),
-                        }}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                        {{
-                          asc: " 🔼",
-                          desc: " 🔽",
-                        }[header.column.getIsSorted() as string] ?? null}
-                      </div>
-                    </th>
-                  );
-                })}
-              </tr>
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                    </div>
+                  </TableHead>
+                ))}
+              </TableRow>
             ))}
-          </thead>
-          <tbody
-            className="grid relative"
+          </TableHeader>
+
+          <TableBody
+            className="relative"
             style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
           >
-            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-              const row = rows[virtualRow.index] as unknown as Row<Payment>;
-              return (
-                <tr
-                  data-index={virtualRow.index}
-                  ref={(node) => rowVirtualizer.measureElement(node)}
-                  key={row.id}
-                  className="flex absolute w-full"
-                  style={{ transform: `translateY(${virtualRow.start}px)` }}
-                >
-                  {row.getVisibleCells().map((cell) => {
-                    return (
-                      <td
+            {rows.length > 0 ? (
+              rowVirtualizer.getVirtualItems().map((virtualRow: any) => {
+                const row = rows[virtualRow.index] as Row<Payment>;
+
+                return (
+                  <TableRow
+                    key={row.id}
+                    ref={(node) => rowVirtualizer.measureElement(node)}
+                    data-index={virtualRow.index}
+                    className="flex absolute w-full hover:bg-gray-100"
+                    style={{ transform: `translateY(${virtualRow.start}px)` }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
                         key={cell.id}
-                        className="flex"
+                        className="flex px-3 py-2 border-r border-gray-100"
                         style={{ width: cell.column.getSize() }}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
                         )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table> */}
-
-      <Table className="relative border border-gray-200">
-        <TableHeader className="sticky top-0 z-10 bg-gray-800 ">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="flex w-full">
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className="flex px-3 py-2 border-r border-gray-700"
-                  style={{ width: header.getSize() }}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
                 >
-                  <div
-                    {...{
-                      className: header.column.getCanSort()
-                        ? "cursor-pointer select-none text-white font-bold"
-                        : "",
-                      onClick: header.column.getToggleSortingHandler(),
-                    }}
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                    {/* {{
-                      asc: " 🔼",
-                      desc: " 🔽",
-                    }[header.column.getIsSorted() as string] ?? null} */}
-                  </div>
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-
-        <TableBody
-          className="relative"
-          style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
-        >
-          {rows.length > 0 ? (
-            rowVirtualizer.getVirtualItems().map((virtualRow: any) => {
-              const row = rows[virtualRow.index] as Row<Payment>;
-
-              return (
-                <TableRow
-                  key={row.id}
-                  ref={(node) => rowVirtualizer.measureElement(node)}
-                  data-index={virtualRow.index}
-                  className="flex absolute w-full hover:bg-gray-100"
-                  style={{ transform: `translateY(${virtualRow.start}px)` }}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className="flex px-3 py-2 border-r border-gray-100"
-                      style={{ width: cell.column.getSize() }}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              );
-            })
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No Payments created yet.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
+                  No Payments created yet.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
 }
