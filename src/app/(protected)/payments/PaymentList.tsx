@@ -14,28 +14,86 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { Payment } from "@/api/makeData";
 import { usePayments } from "./usePayments";
 
+import { PaymentListTable } from "./PaymentListTable";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+
 export function PaymentList() {
   const columns: ColumnDef<Payment>[] = [
     {
       accessorKey: "firstName",
       cell: (info) => info.getValue(),
-      header: () => <span>First Name</span>,
+      header: ({ column }) => {
+        return (
+          <div
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex text-center items-center"
+          >
+            First Name
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </div>
+        );
+      },
     },
     {
       accessorFn: (row) => row.lastName,
       id: "lastName",
       cell: (info) => info.getValue(),
-      header: () => <span>Last Name</span>,
+      header: ({ column }) => {
+        return (
+          <div
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex text-center items-center"
+          >
+            Last Name
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </div>
+        );
+      },
     },
 
     {
       accessorKey: "reference",
-      header: () => <span>Reference</span>,
+      header: ({ column }) => {
+        return (
+          <div
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex text-center items-center"
+          >
+            Reference
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </div>
+        );
+      },
     },
     {
       accessorKey: "amount",
-      header: () => <span>Amount</span>,
-      cell: (info) => info.getValue() as number,
+      header: () => <div className="text-right">Amount</div>,
+      cell: ({ row }) => {
+        const amount = parseFloat(row.getValue("amount"));
+        const formatted = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+        }).format(amount);
+
+        return <div className="text-right font-medium">{formatted}</div>;
+      },
     },
     {
       accessorKey: "status",
@@ -46,6 +104,36 @@ export function PaymentList() {
       header: () => <span>Created At</span>,
       cell: (info) => info.getValue<Date>().toLocaleString(),
       size: 200,
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const payment = row.original;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem
+                onClick={() =>
+                  navigator.clipboard.writeText(payment.id.toString())
+                }
+              >
+                Copy payment ID
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>View payment details</DropdownMenuItem>
+              <DropdownMenuItem>View property</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
     },
   ];
 
@@ -127,14 +215,12 @@ export function PaymentList() {
     return <>Loading...</>;
   }
   return (
-    <div>
-      <p>total rows: {rows.length}</p>
-      <div
-        onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
-        ref={tableContainerRef}
-        className="container overflow-auto relative h-[600px]"
-      >
-        <table className="grid">
+    <div
+      onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
+      ref={tableContainerRef}
+      className="container overflow-auto relative h-[600px]"
+    >
+      {/* <table className="grid">
           <thead className="grid sticky top-0 z-10 bg-gray-100 border-b border-r border-gray-300 px-2 py-1 text-left">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="flex w-full">
@@ -202,8 +288,81 @@ export function PaymentList() {
               );
             })}
           </tbody>
-        </table>
-      </div>
+        </table> */}
+
+      <Table className="relative border border-gray-200">
+        <TableHeader className="sticky top-0 z-10 bg-gray-800 ">
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id} className="flex w-full">
+              {headerGroup.headers.map((header) => (
+                <TableHead
+                  key={header.id}
+                  className="flex px-3 py-2 border-r border-gray-700"
+                  style={{ width: header.getSize() }}
+                >
+                  <div
+                    {...{
+                      className: header.column.getCanSort()
+                        ? "cursor-pointer select-none text-white font-bold"
+                        : "",
+                      onClick: header.column.getToggleSortingHandler(),
+                    }}
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                    {/* {{
+                      asc: " 🔼",
+                      desc: " 🔽",
+                    }[header.column.getIsSorted() as string] ?? null} */}
+                  </div>
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+
+        <TableBody
+          className="relative"
+          style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+        >
+          {rows.length > 0 ? (
+            rowVirtualizer.getVirtualItems().map((virtualRow: any) => {
+              const row = rows[virtualRow.index] as Row<Payment>;
+
+              return (
+                <TableRow
+                  key={row.id}
+                  ref={(node) => rowVirtualizer.measureElement(node)}
+                  data-index={virtualRow.index}
+                  className="flex absolute w-full hover:bg-gray-100"
+                  style={{ transform: `translateY(${virtualRow.start}px)` }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className="flex px-3 py-2 border-r border-gray-100"
+                      style={{ width: cell.column.getSize() }}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              );
+            })
+          ) : (
+            <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                No Payments created yet.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }
