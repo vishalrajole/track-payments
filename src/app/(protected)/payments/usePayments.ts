@@ -1,8 +1,8 @@
 import { useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchPayments } from "@/api/payments";
-import { QUERIES } from "@/helpers/queries";
-import { PaymentResponse } from "@/api/makeData";
 import { SortingState } from "@tanstack/react-table";
+import { PaymentResponse } from "@/@types/payments";
+import { QUERIES } from "@/helpers/queries";
+import { BASE_URL } from "@/helpers/api";
 
 export const DEFAULT_PAGE_LIMIT = 50;
 
@@ -17,14 +17,27 @@ async function getPayments({
   sorting: SortingState;
   searchTerm?: string;
 }) {
-  const response = await fetchPayments({
-    start,
-    limit,
-    sorting,
-    searchTerm,
+  const params = new URLSearchParams({
+    start: start.toString(),
+    limit: limit.toString(),
+    sorting: JSON.stringify(sorting),
+    searchTerm: searchTerm || "",
   });
 
-  return response;
+  const response = await fetch(`${BASE_URL}payments?${params.toString()}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Error fetching payments");
+  }
+
+  const data = await response.json();
+
+  return data;
 }
 
 export const usePayments = ({

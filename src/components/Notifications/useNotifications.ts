@@ -1,7 +1,7 @@
 import { useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
+import { NotificationResponse } from "@/@types/notifications";
 import { QUERIES } from "@/helpers/queries";
-import { NotificationResponse } from "@/api/makeData";
-import { fetchNotifications } from "@/api/notifications";
+import { BASE_URL, STALE_TIME } from "@/helpers/api";
 
 export const DEFAULT_PAGE_LIMIT = 50;
 
@@ -12,12 +12,28 @@ async function getNotifications({
   start: number;
   limit: number;
 }) {
-  const response = await fetchNotifications({
-    start,
-    limit,
+  const params = new URLSearchParams({
+    start: start.toString(),
+    limit: limit.toString(),
   });
 
-  return response;
+  const response = await fetch(
+    `${BASE_URL}notifications?${params.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Error fetching payments");
+  }
+
+  const data = await response.json();
+
+  return data;
 }
 
 export const useNotifications = () => {
@@ -32,6 +48,7 @@ export const useNotifications = () => {
       });
       return fetchedData;
     },
+    staleTime: STALE_TIME,
     initialPageParam: 0,
     getNextPageParam: (_lastGroup, groups) => groups.length,
     refetchOnWindowFocus: false,
