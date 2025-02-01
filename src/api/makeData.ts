@@ -12,8 +12,22 @@ export type Payment = {
   createdAt: Date;
 };
 
-export type paymentApiResponse = {
+export type Notification = {
+  id: number;
+  title: string;
+  message: string;
+  createdAt: Date;
+};
+
+export type PaymentResponse = {
   data: Payment[];
+  meta: {
+    totalRowCount: number;
+  };
+};
+
+export type NotificationResponse = {
+  data: Notification[];
   meta: {
     totalRowCount: number;
   };
@@ -27,7 +41,7 @@ const range = (len: number) => {
   return arr;
 };
 
-const newpayment = (index: number): Payment => {
+const newPayment = (index: number): Payment => {
   return {
     id: index + 1,
     firstName: faker.person.firstName(),
@@ -43,23 +57,35 @@ const newpayment = (index: number): Payment => {
   };
 };
 
-export function makeData(...lens: number[]) {
-  const makeDataLevel = (depth = 0): Payment[] => {
+const newNotification = (index: number): Notification => {
+  return {
+    id: index + 1,
+    title: faker.lorem.words(),
+    message: faker.lorem.sentence(),
+    createdAt: faker.date.anytime(),
+  };
+};
+
+export function makeData<T extends "payment" | "notification">(
+  model: T,
+  ...lens: number[]
+): T extends "payment" ? Payment[] : Notification[] {
+  const makeDataLevel = (depth = 0): (Payment | Notification)[] => {
     const len = lens[depth]!;
-    return range(len).map((d): Payment => {
-      return {
-        ...newpayment(d),
-      };
+    return range(len).map((d): Payment | Notification => {
+      return model === "payment"
+        ? { ...newPayment(d) }
+        : { ...newNotification(d) };
     });
   };
 
-  return makeDataLevel();
+  return makeDataLevel() as T extends "payment" ? Payment[] : Notification[];
 }
 
-const data = makeData(1000);
+const paymentData = makeData("payment", 1000);
 
 //simulates a backend api
-export const fetchData = async ({
+export const fetchPaymentsData = async ({
   start,
   limit,
   sorting,
@@ -70,7 +96,7 @@ export const fetchData = async ({
   sorting: SortingState;
   searchTerm?: string;
 }) => {
-  let dbData = [...data];
+  let dbData = [...paymentData];
   if (sorting?.length) {
     const sort = sorting[0] as ColumnSort;
     const { id, desc } = sort as { id: keyof Payment; desc: boolean };
@@ -89,6 +115,29 @@ export const fetchData = async ({
       )
     );
   }
+
+  //simulate a backend api
+  await new Promise((resolve) => setTimeout(resolve, 200));
+
+  return {
+    data: dbData.slice(start, start + limit),
+    meta: {
+      totalRowCount: dbData.length,
+    },
+  };
+};
+
+const notificationsData = makeData("notification", 1000);
+
+//simulates a backend api
+export const fetchNotificationsData = async ({
+  start,
+  limit,
+}: {
+  start: number;
+  limit: number;
+}) => {
+  let dbData = [...notificationsData];
 
   //simulate a backend api
   await new Promise((resolve) => setTimeout(resolve, 200));

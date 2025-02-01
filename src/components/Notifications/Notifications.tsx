@@ -1,10 +1,59 @@
+import { useEffect, useMemo, useRef } from "react";
 import { X } from "lucide-react";
+import { useNotifications } from "./useNotifications";
+import { Error } from "../Error/Error";
+import { Spinner } from "../Spinner/Spinner";
 
 interface NotificationsProps {
   setIsOpen: (isOpen: boolean) => void;
 }
 
 export default function Notifications({ setIsOpen }: NotificationsProps) {
+  const {
+    data,
+    isError,
+    fetchNextPage,
+    isFetchingNextPage,
+    hasNextPage,
+    isLoading,
+  } = useNotifications();
+
+  const flatData = useMemo(
+    () => data?.pages?.flatMap((page) => page.data) ?? [],
+    [data]
+  );
+  const totalDBRowCount = data?.pages?.[0]?.meta?.totalRowCount ?? 0;
+  const totalFetched = flatData.length;
+
+  const notificationRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!notificationRef.current || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { root: null, rootMargin: "100px", threshold: 0.1 }
+    );
+
+    const currentSentinel = notificationRef.current;
+    observer.observe(currentSentinel);
+
+    return () => {
+      if (currentSentinel) {
+        observer.unobserve(currentSentinel);
+      }
+      observer.disconnect();
+    };
+  }, [fetchNextPage, hasNextPage]);
+
+  if (isError) {
+    return <Error />;
+  }
+
   return (
     <>
       <div
@@ -21,12 +70,25 @@ export default function Notifications({ setIsOpen }: NotificationsProps) {
         </div>
 
         <div className="flex-1 overflow-y-auto mt-4 space-y-2">
-          {[...Array(20)].map((_, i) => (
-            <div key={i} className="p-2 border rounded-lg bg-gray-100">
-              <p className="text-sm font-medium">Property {i + 1}</p>
-              <p className="text-xs text-gray-500">Payment received...</p>
+          {isLoading ? <Spinner /> : null}
+          {flatData.map((notification) => (
+            <div
+              key={notification.id}
+              className="p-2 border rounded-lg bg-gray-100"
+            >
+              <div>
+                <p className="text-sm font-medium">{notification.title}</p>
+                <p className="text-sm font-medium">
+                  {new Date(notification.createdAt).toLocaleString()}
+                </p>
+              </div>
+              <p className="text-xs text-gray-500">{notification.message}</p>
             </div>
           ))}
+
+          <div ref={notificationRef} className="py-4 flex justify-center">
+            {isFetchingNextPage && <Spinner />}
+          </div>
         </div>
       </aside>
     </>

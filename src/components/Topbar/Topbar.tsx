@@ -4,10 +4,23 @@ import { usePathname } from "next/navigation";
 import { logout } from "@/app/(public)/login/actions";
 import { useState } from "react";
 import Notifications from "../Notifications/Notifications";
+import { useNotificationCount } from "../Notifications/NotificationContext";
+import { NotificationProvider } from "../Notifications/NotificationContext";
 
-export default function Topbar() {
+const NOTIFICATIONS_COUNT_LIMIT = 10;
+
+export default function TopbarWrapper() {
+  return (
+    <NotificationProvider>
+      <Topbar />
+    </NotificationProvider>
+  );
+}
+
+function Topbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { totalNotifications } = useNotificationCount();
 
   const pageTitle = pathname.split("/").filter(Boolean).pop() || "Payments";
 
@@ -23,6 +36,16 @@ export default function Topbar() {
           onClick={() => setIsOpen(true)}
         >
           <Bell className="w-6 h-6 text-gray-700" />
+          {totalNotifications > 0 && (
+            <span
+              className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold 
+            rounded-full w-5 h-5 flex items-center justify-center min-w-[20px]"
+            >
+              {totalNotifications > NOTIFICATIONS_COUNT_LIMIT
+                ? `${NOTIFICATIONS_COUNT_LIMIT}+`
+                : totalNotifications}
+            </span>
+          )}
         </button>
 
         <button

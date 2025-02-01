@@ -11,6 +11,8 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/Spinner/Spinner";
+import { Error } from "@/components/Error/Error";
 import { Grid } from "./Grid";
 import { usePayments } from "./usePayments";
 import { Search } from "./Search";
@@ -99,11 +101,11 @@ export function PaymentList() {
   }, [fetchMoreOnBottomReached]);
 
   if (isLoading) {
-    return <>Loading...</>;
+    return <Spinner />;
   }
 
   if (isError) {
-    return <>Error...</>;
+    return <Error />;
   }
 
   return (

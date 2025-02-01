@@ -1,5 +1,5 @@
 import { SortingState } from "@tanstack/react-table";
-import { fetchData } from "./makeData";
+import { fetchPaymentsData } from "./makeData";
 
 export async function fetchPayments({
   start,
@@ -12,7 +12,7 @@ export async function fetchPayments({
   sorting: SortingState;
   searchTerm?: string;
 }) {
-  const fetchedData = await fetchData({
+  const fetchedData = await fetchPaymentsData({
     start,
     limit,
     sorting,

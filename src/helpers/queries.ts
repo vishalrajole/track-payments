@@ -1,3 +1,8 @@
 export const QUERIES = {
-  fetchPayments: "fetchPayments",
+  payments: {
+    fetchPayments: "fetchPayments",
+  },
+  notifications: {
+    fetchNotifications: "fetchNotifications",
+  },
 };

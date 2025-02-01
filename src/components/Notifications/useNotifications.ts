@@ -1,49 +1,34 @@
 import { useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
-import { fetchPayments } from "@/api/payments";
 import { QUERIES } from "@/helpers/queries";
-import { PaymentResponse } from "@/api/makeData";
-import { SortingState } from "@tanstack/react-table";
+import { NotificationResponse } from "@/api/makeData";
+import { fetchNotifications } from "@/api/notifications";
 
 export const DEFAULT_PAGE_LIMIT = 50;
 
-async function getPayments({
+async function getNotifications({
   start,
   limit,
-  sorting,
-  searchTerm,
 }: {
   start: number;
   limit: number;
-  sorting: SortingState;
-  searchTerm?: string;
 }) {
-  const response = await fetchPayments({
+  const response = await fetchNotifications({
     start,
     limit,
-    sorting,
-    searchTerm,
   });
 
   return response;
 }
 
-export const usePayments = ({
-  sorting,
-  searchTerm,
-}: {
-  sorting: SortingState;
-  searchTerm?: string;
-}) => {
-  return useInfiniteQuery<PaymentResponse>({
-    queryKey: [QUERIES.payments.fetchPayments, [sorting, searchTerm]],
+export const useNotifications = () => {
+  return useInfiniteQuery<NotificationResponse>({
+    queryKey: [QUERIES.notifications.fetchNotifications],
 
     queryFn: async ({ pageParam = 0 }) => {
       const start = (pageParam as number) * DEFAULT_PAGE_LIMIT;
-      const fetchedData = await getPayments({
+      const fetchedData = await getNotifications({
         start: start,
         limit: DEFAULT_PAGE_LIMIT,
-        sorting,
-        searchTerm,
       });
       return fetchedData;
     },
