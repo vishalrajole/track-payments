@@ -2,6 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch Chrome",
+      "request": "launch",
+      "type": "chrome",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
       "name": "Next.js: debug server-side",
       "type": "node-terminal",
       "request": "launch",
@@ -33,8 +40,9 @@
       "program": "${workspaceFolder}/node_modules/.bin/next",
       "runtimeArgs": ["--inspect"],
       "skipFiles": ["<node_internals>/**"],
+      "cwd": "${workspaceFolder}/src",
       "serverReadyAction": {
-        "action": "debugWithEdge",
+        "action": "debugWithChrome",
         "killOnServerStop": true,
         "pattern": "- Local:.+(https?://.+)",
         "uriFormat": "%s",
