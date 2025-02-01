@@ -1,5 +1,15 @@
 Track payments for real estate for properties.
 
+- [x] display list of payments: searching, sorting, infinite scroll pagination 
+- [x] display notifications: infinite scroll, 
+- [x] authenticated routes 
+- [x] login/logout screen with react19 actions (demo purpose)
+- [x] cypress e2e 
+- [x] nest js backend api to fetch payments and notifications with pagination, search, sort functionality
+- [ ] Database setup 
+- [ ] CI deployment for nextjs app and nest js backend: broken on vercel
+
+
 ## Tech stack
 - client: Next js 15 (app router), tailwind css, tanstack query, tanstack table, shadcn ui, cypress.io 
 - backend: Nest js, faker.js
