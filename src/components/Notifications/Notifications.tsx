@@ -9,6 +9,8 @@ interface NotificationsProps {
 }
 
 export default function Notifications({ setIsOpen }: NotificationsProps) {
+  const notificationRef = useRef<HTMLDivElement | null>(null);
+
   const {
     data,
     isError,
@@ -22,10 +24,6 @@ export default function Notifications({ setIsOpen }: NotificationsProps) {
     () => data?.pages?.flatMap((page) => page.data) ?? [],
     [data]
   );
-  const totalDBRowCount = data?.pages?.[0]?.meta?.totalRowCount ?? 0;
-  const totalFetched = flatData.length;
-
-  const notificationRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!notificationRef.current || !hasNextPage) return;
@@ -39,12 +37,12 @@ export default function Notifications({ setIsOpen }: NotificationsProps) {
       { root: null, rootMargin: "100px", threshold: 0.1 }
     );
 
-    const currentSentinel = notificationRef.current;
-    observer.observe(currentSentinel);
+    const currentRef = notificationRef.current;
+    observer.observe(currentRef);
 
     return () => {
-      if (currentSentinel) {
-        observer.unobserve(currentSentinel);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
       observer.disconnect();
     };

@@ -137,7 +137,7 @@ export const fetchNotificationsData = async ({
   start: number;
   limit: number;
 }) => {
-  let dbData = [...notificationsData];
+  const dbData = [...notificationsData];
 
   //simulate a backend api
   await new Promise((resolve) => setTimeout(resolve, 200));
