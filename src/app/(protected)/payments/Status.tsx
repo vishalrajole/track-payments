@@ -25,7 +25,7 @@ export function Status({ status }: { status: PaymentStatus }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Badge
-            className={`px-2 py-1 rounded-md cursor-pointer hover:${statusStyles[status]} ${statusStyles[status]}`}
+            className={`px-2 py-1 rounded-md hover:${statusStyles[status]} ${statusStyles[status]}`}
           >
             {capitalizedStatus(status)}
           </Badge>
